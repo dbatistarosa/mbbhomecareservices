@@ -2,13 +2,30 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", phone: "", email: "", service: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+    const { error: sbError } = await supabase.from("contact_inquiries").insert({
+      name: form.name,
+      phone: form.phone,
+      email: form.email,
+      service: form.service,
+      message: form.message,
+    });
+    setLoading(false);
+    if (sbError) {
+      setError("Something went wrong. Please call us at (561) 823-1442.");
+      return;
+    }
     setSubmitted(true);
   };
 
@@ -249,10 +266,14 @@ export default function ContactPage() {
 
                       <button
                         type="submit"
-                        className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-700 to-pink-700 hover:from-violet-600 hover:to-pink-600 text-white font-semibold transition-all shadow-md shadow-violet-900/20 text-sm"
+                        disabled={loading}
+                        className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-700 to-pink-700 hover:from-violet-600 hover:to-pink-600 text-white font-semibold transition-all shadow-md shadow-violet-900/20 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        Send Message
+                        {loading ? "Sending…" : "Send Message"}
                       </button>
+                      {error && (
+                        <p className="text-center text-sm text-red-600 font-medium">{error}</p>
+                      )}
                     </form>
                   </>
                 )}

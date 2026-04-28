@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const SERVICES = [
   "Personal Care (Bathing, Dressing, Grooming)",
@@ -99,6 +100,8 @@ export default function BookingForm() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(EMPTY);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const toggleService = (s: string) => {
     setForm((f) => ({
@@ -122,7 +125,35 @@ export default function BookingForm() {
     return true;
   };
 
-  const handleSubmit = () => setSubmitted(true);
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError(null);
+    const { error: sbError } = await supabase.from("bookings").insert({
+      services: form.services,
+      frequency: form.frequency,
+      schedule: form.schedule,
+      start_date: form.startDate,
+      client_name: form.clientName,
+      client_age: form.clientAge,
+      relationship: form.relationship,
+      care_address: form.careAddress,
+      city: form.city,
+      county: form.county,
+      medical_notes: form.medicalNotes,
+      contact_name: form.contactName,
+      contact_phone: form.contactPhone,
+      contact_email: form.contactEmail,
+      contact_method: form.contactMethod,
+      best_time: form.bestTime,
+      additional_notes: form.additionalNotes,
+    });
+    setLoading(false);
+    if (sbError) {
+      setError("Something went wrong. Please call us at (561) 823-1442.");
+      return;
+    }
+    setSubmitted(true);
+  };
 
   if (submitted) {
     return (
@@ -575,12 +606,17 @@ export default function BookingForm() {
             <button
               type="button"
               onClick={handleSubmit}
-              className="px-8 py-3 rounded-full bg-gradient-to-r from-violet-700 to-pink-700 hover:from-violet-600 hover:to-pink-600 text-white font-semibold text-sm shadow-md transition-all"
+              disabled={loading}
+              className="px-8 py-3 rounded-full bg-gradient-to-r from-violet-700 to-pink-700 hover:from-violet-600 hover:to-pink-600 text-white font-semibold text-sm shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Submit Request ✓
+              {loading ? "Submitting…" : "Submit Request ✓"}
             </button>
           )}
         </div>
+
+        {error && (
+          <p className="mt-4 text-center text-sm text-red-600 font-medium">{error}</p>
+        )}
       </div>
     </div>
   );
