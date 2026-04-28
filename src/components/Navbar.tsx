@@ -2,17 +2,20 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-const links = [
-  { label: "Services", href: "#services" },
-  { label: "Who We Serve", href: "#who-we-serve" },
-  { label: "About Us", href: "#about" },
-  { label: "Contact", href: "#contact" },
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "Services", href: "/services" },
+  { label: "About Us", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -20,34 +23,36 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const transparent = isHome && !scrolled;
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-100"
-          : "bg-transparent"
+        transparent
+          ? "bg-transparent"
+          : "bg-white/95 backdrop-blur-md shadow-sm border-b border-violet-100"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="#hero" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-sky-700 flex items-center justify-center shadow-md group-hover:bg-sky-600 transition-colors">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-700 to-pink-700 flex items-center justify-center shadow-md">
               <span className="text-white font-bold text-sm tracking-tight">
                 MBB
               </span>
             </div>
-            <div className="hidden sm:block">
+            <div>
               <p
-                className={`font-semibold text-base leading-tight transition-colors ${
-                  scrolled ? "text-slate-900" : "text-white"
+                className={`font-bold text-base leading-tight transition-colors ${
+                  transparent ? "text-white" : "text-violet-900"
                 }`}
               >
                 MBB Homecare
               </p>
               <p
                 className={`text-xs transition-colors ${
-                  scrolled ? "text-slate-500" : "text-sky-200"
+                  transparent ? "text-violet-200" : "text-pink-600"
                 }`}
               >
                 Services
@@ -56,43 +61,56 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-8">
-            {links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`text-sm font-medium transition-colors hover:text-sky-400 ${
-                  scrolled ? "text-slate-700" : "text-white/90"
-                }`}
-              >
-                {l.label}
-              </Link>
-            ))}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((l) => {
+              const active = pathname === l.href;
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    active
+                      ? transparent
+                        ? "bg-white/15 text-white"
+                        : "bg-violet-50 text-violet-700"
+                      : transparent
+                      ? "text-white/80 hover:text-white hover:bg-white/10"
+                      : "text-slate-600 hover:text-violet-700 hover:bg-violet-50"
+                  }`}
+                >
+                  {l.label}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* CTA */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             <a
               href="tel:5618231442"
-              className="text-sm font-semibold text-sky-500 hover:text-sky-400 transition-colors"
+              className={`text-sm font-semibold transition-colors ${
+                transparent
+                  ? "text-violet-200 hover:text-white"
+                  : "text-violet-600 hover:text-violet-800"
+              }`}
             >
               (561) 823-1442
             </a>
-            <a
-              href="#contact"
-              className="px-5 py-2.5 rounded-full bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold transition-colors shadow-md shadow-sky-900/20"
+            <Link
+              href="/booking"
+              className="px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-700 to-pink-700 hover:from-violet-600 hover:to-pink-600 text-white text-sm font-semibold transition-all shadow-md shadow-violet-900/25"
             >
-              Get Care Now
-            </a>
+              Book Now
+            </Link>
           </div>
 
           {/* Mobile hamburger */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className={`md:hidden p-2 rounded-lg transition-colors ${
-              scrolled
-                ? "text-slate-700 hover:bg-slate-100"
-                : "text-white hover:bg-white/10"
+              transparent
+                ? "text-white hover:bg-white/10"
+                : "text-slate-700 hover:bg-violet-50"
             }`}
             aria-label="Toggle menu"
           >
@@ -123,31 +141,38 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-100 py-4 px-2 rounded-b-2xl shadow-xl">
-            {links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                onClick={() => setMenuOpen(false)}
-                className="block py-3 px-4 text-slate-700 font-medium rounded-xl hover:bg-sky-50 hover:text-sky-700 transition-colors"
-              >
-                {l.label}
-              </Link>
-            ))}
-            <div className="mt-3 px-4 pt-3 border-t border-slate-100 flex flex-col gap-3">
+          <div className="md:hidden bg-white border-t border-violet-100 py-4 px-2 rounded-b-2xl shadow-xl">
+            {navLinks.map((l) => {
+              const active = pathname === l.href;
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setMenuOpen(false)}
+                  className={`block py-3 px-4 font-medium rounded-xl transition-colors ${
+                    active
+                      ? "bg-violet-50 text-violet-700"
+                      : "text-slate-700 hover:bg-violet-50 hover:text-violet-700"
+                  }`}
+                >
+                  {l.label}
+                </Link>
+              );
+            })}
+            <div className="mt-3 px-4 pt-3 border-t border-violet-100 flex flex-col gap-3">
               <a
                 href="tel:5618231442"
-                className="text-sky-600 font-semibold text-sm"
+                className="text-violet-700 font-semibold text-sm"
               >
                 (561) 823-1442
               </a>
-              <a
-                href="#contact"
+              <Link
+                href="/booking"
                 onClick={() => setMenuOpen(false)}
-                className="w-full text-center py-3 rounded-full bg-sky-600 text-white font-semibold text-sm"
+                className="w-full text-center py-3 rounded-full bg-gradient-to-r from-violet-700 to-pink-700 text-white font-semibold text-sm"
               >
-                Get Care Now
-              </a>
+                Book Now
+              </Link>
             </div>
           </div>
         )}

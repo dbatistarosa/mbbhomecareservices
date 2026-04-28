@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #0f172a;
+  --foreground: #1e1b4b;
 }
 
 @theme inline {
@@ -10,6 +10,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-brand-purple: #5b21b6;
+  --color-brand-violet: #6d28d9;
+  --color-brand-pink: #be185d;
+  --color-brand-rose: #9d174d;
 }
 
 html {
